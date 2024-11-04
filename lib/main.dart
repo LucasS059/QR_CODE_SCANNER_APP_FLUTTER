@@ -1,76 +1,109 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'QR Code Scanner',
+      title: 'Login App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: QRViewExample(),
+      home: LoginScreen(),
     );
   }
 }
 
-class QRViewExample extends StatefulWidget {
+class LoginScreen extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => _QRViewExampleState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _QRViewExampleState extends State<QRViewExample> {
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? controller;
-  String? qrText;
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
-  @override
-  void reassemble() {
-    super.reassemble();
-    controller?.pauseCamera();
-    controller?.resumeCamera();
+  void _login() {
+    if (_formKey.currentState!.validate()) {
+      String username = _usernameController.text;
+      String password = _passwordController.text;
+
+      // Lógica simples de login simulada
+      if (username == "admin" && password == "12345") {
+        // Navega para a próxima tela após o login bem-sucedido
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login ou senha incorretos')),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('QR Code Scanner')),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            flex: 5,
-            child: QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-            ),
+      appBar: AppBar(
+        title: Text('Tela de Login'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(labelText: 'Nome de Usuário'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira o nome de usuário';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: 'Senha'),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira a senha';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _login,
+                child: Text('Login'),
+              ),
+            ],
           ),
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: (qrText != null)
-                  ? Text('QR Code: $qrText')
-                  : Text('Escaneie um QR Code'),
-            ),
-          )
-        ],
+        ),
       ),
     );
   }
+}
 
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        qrText = scanData.code;
-      });
-    });
-  }
-
+class HomeScreen extends StatelessWidget {
   @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Tela Principal'),
+      ),
+      body: Center(
+        child: Text('Bem-vindo à Tela Principal!'),
+      ),
+    );
   }
 }
